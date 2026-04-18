@@ -487,7 +487,7 @@
 <div class="container">
   <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 10px;">
     <span id="mode-label" style="font-weight:600;font-size:1rem;color:var(--accent);">EN → IT</span>
-    <span style="font-size:0.75rem;color:var(--muted);">DS2604181510</span>
+    <span style="font-size:0.75rem;color:var(--muted);">DS2604181600</span>
   </div>
 
   <!-- SETUP SCREEN -->
@@ -649,12 +649,8 @@ let selectedCats = new Set(['sostantivo','verbo','aggettivo','avverbio']);
 let exerciseMode = 'en';
 let wordVisible = true;
 const MASK = '*****';
-let micActive = false;
-let drillMicActive = false;
 let isWaitingForAnswer = false;
 let currentRecognition = null;
-let currentTranscript = '';
-let pendingManualAnswer = false;
 
 function getWords(S, W) {
   const eligible = [];
@@ -884,117 +880,108 @@ function playMicSound(on) {
   } catch(e) {}
 }
 
-async function startListening(isDrillMode = false) {
+function startListening(isDrillMode = false) {
   if (!speechSupported) {
     showToast('Il tuo browser non supporta il riconoscimento vocale');
     return;
   }
-  if (isDrillMode ? drillMicActive : micActive) return;
+  if (isDrillMode ? (currentRecognition && currentRecognition.isDrillMode) : (currentRecognition && !currentRecognition.isDrillMode)) return;
   
-  const hasPermission = await requestMicrophonePermission();
-  if (!hasPermission) return;
-  
-  if (isDrillMode) {
-    drillMicActive = true;
-    isWaitingForAnswer = true;
-    currentTranscript = '';
-    document.getElementById('drill-transcript').textContent = '';
-    document.getElementById('drill-mic-area').classList.add('listening');
-    document.getElementById('drill-mic-status').textContent = 'In ascolto...';
-    document.getElementById('drill-mic-icon').textContent = '⏹';
-    document.getElementById('drill-mic-icon').style.background = '#1a1a00';
-    showWaveform(true, true);
-    playMicSound(true);
-    startRing('drill-mic-ring');
+  requestMicrophonePermission().then(hasPermission => {
+    if (!hasPermission) return;
     
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    currentRecognition = new SR();
-    currentRecognition.lang = exerciseMode === 'en' ? 'it-IT' : 'en-US';
-    currentRecognition.continuous = false;
-    currentRecognition.interimResults = true;
-    
-    currentRecognition.onresult = (e) => {
-      let final = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) final += e.results[i][0].transcript;
-        else currentTranscript = e.results[i][0].transcript;
-      }
-      if (final) {
-        currentTranscript = final;
-        document.getElementById('drill-transcript').textContent = final;
-        stopListening(true);
-        evaluateAnswer(final.trim().toLowerCase(), true);
-      } else {
-        document.getElementById('drill-transcript').textContent = currentTranscript;
-      }
-    };
-    
-    currentRecognition.onend = () => {
-      if (drillMicActive && isWaitingForAnswer) {
-        stopListening(true);
-        if (currentTranscript.trim()) {
-          evaluateAnswer(currentTranscript.trim().toLowerCase(), true);
+    if (isDrillMode) {
+      const area = document.getElementById('drill-mic-area');
+      const status = document.getElementById('drill-mic-status');
+      const icon = document.getElementById('drill-mic-icon');
+      area.classList.add('listening');
+      status.textContent = 'In ascolto...';
+      icon.textContent = '⏹';
+      icon.style.background = '#1a1a00';
+      showWaveform(true, true);
+      playMicSound(true);
+      startRing('drill-mic-ring');
+      
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      currentRecognition = new SR();
+      currentRecognition.isDrillMode = true;
+      currentRecognition.lang = exerciseMode === 'en' ? 'it-IT' : 'en-US';
+      currentRecognition.continuous = false;
+      currentRecognition.interimResults = true;
+      
+      currentRecognition.onresult = (e) => {
+        let final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) {
+            final += e.results[i][0].transcript;
+          }
         }
-      }
-    };
-    
-    currentRecognition.onerror = () => {
-      if (drillMicActive && isWaitingForAnswer) stopListening(true);
-    };
-    
-    currentRecognition.start();
-    setTimeout(() => { if (drillMicActive && isWaitingForAnswer) stopListening(true); }, 10000);
-  } else {
-    micActive = true;
-    isWaitingForAnswer = true;
-    currentTranscript = '';
-    document.getElementById('transcript-preview').textContent = '';
-    document.getElementById('mic-area').classList.add('listening');
-    document.getElementById('mic-status').textContent = 'In ascolto...';
-    document.getElementById('mic-icon').textContent = '⏹';
-    document.getElementById('mic-icon').style.background = '#1a1a00';
-    showWaveform(true, false);
-    playMicSound(true);
-    startRing('mic-ring');
-    
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    currentRecognition = new SR();
-    currentRecognition.lang = exerciseMode === 'en' ? 'it-IT' : 'en-US';
-    currentRecognition.continuous = false;
-    currentRecognition.interimResults = true;
-    
-    currentRecognition.onresult = (e) => {
-      let final = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) final += e.results[i][0].transcript;
-        else currentTranscript = e.results[i][0].transcript;
-      }
-      if (final) {
-        currentTranscript = final;
-        document.getElementById('transcript-preview').textContent = final;
-        stopListening(false);
-        evaluateAnswer(final.trim().toLowerCase(), false);
-      } else {
-        document.getElementById('transcript-preview').textContent = currentTranscript;
-      }
-    };
-    
-    currentRecognition.onend = () => {
-      if (micActive && isWaitingForAnswer) {
-        stopListening(false);
-        if (currentTranscript.trim()) {
-          evaluateAnswer(currentTranscript.trim().toLowerCase(), false);
+        if (final) {
+          document.getElementById('drill-transcript').textContent = final;
+          stopListening(true);
+          evaluateAnswer(final.trim().toLowerCase(), true);
         }
-      }
-    };
-    
-    currentRecognition.onerror = () => {
-      if (micActive && isWaitingForAnswer) stopListening(false);
-    };
-    
-    currentRecognition.start();
-    setTimeout(() => { if (micActive && isWaitingForAnswer) stopListening(false); }, 10000);
-  }
+      };
+      
+      currentRecognition.onend = () => {
+        if (currentRecognition && currentRecognition.isDrillMode) {
+          stopListening(true);
+        }
+      };
+      
+      currentRecognition.start();
+      setTimeout(() => {
+        if (currentRecognition && currentRecognition.isDrillMode) {
+          stopListening(true);
+        }
+      }, 10000);
+    } else {
+      const area = document.getElementById('mic-area');
+      const status = document.getElementById('mic-status');
+      const icon = document.getElementById('mic-icon');
+      area.classList.add('listening');
+      status.textContent = 'In ascolto...';
+      icon.textContent = '⏹';
+      icon.style.background = '#1a1a00';
+      showWaveform(true, false);
+      playMicSound(true);
+      startRing('mic-ring');
+      
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      currentRecognition = new SR();
+      currentRecognition.isDrillMode = false;
+      currentRecognition.lang = exerciseMode === 'en' ? 'it-IT' : 'en-US';
+      currentRecognition.continuous = false;
+      currentRecognition.interimResults = true;
+      
+      currentRecognition.onresult = (e) => {
+        let final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) {
+            final += e.results[i][0].transcript;
+          }
+        }
+        if (final) {
+          document.getElementById('transcript-preview').textContent = final;
+          stopListening(false);
+          evaluateAnswer(final.trim().toLowerCase(), false);
+        }
+      };
+      
+      currentRecognition.onend = () => {
+        if (currentRecognition && !currentRecognition.isDrillMode) {
+          stopListening(false);
+        }
+      };
+      
+      currentRecognition.start();
+      setTimeout(() => {
+        if (currentRecognition && !currentRecognition.isDrillMode) {
+          stopListening(false);
+        }
+      }, 10000);
+    }
+  });
 }
 
 function stopListening(isDrillMode = false) {
@@ -1003,39 +990,37 @@ function stopListening(isDrillMode = false) {
     currentRecognition = null;
   }
   if (isDrillMode) {
-    if (drillMicActive) {
-      drillMicActive = false;
-      isWaitingForAnswer = false;
-      stopRing('drill-mic-ring');
-      playMicSound(false);
-      document.getElementById('drill-mic-area').classList.remove('listening');
-      document.getElementById('drill-mic-status').textContent = 'Tocca per rispondere';
-      document.getElementById('drill-mic-icon').textContent = '🎤';
-      document.getElementById('drill-mic-icon').style.background = 'var(--surface)';
-      showWaveform(false, true);
-    }
+    const area = document.getElementById('drill-mic-area');
+    const status = document.getElementById('drill-mic-status');
+    const icon = document.getElementById('drill-mic-icon');
+    area.classList.remove('listening');
+    status.textContent = 'Tocca per rispondere';
+    icon.textContent = '🎤';
+    icon.style.background = 'var(--surface)';
+    showWaveform(false, true);
+    stopRing('drill-mic-ring');
+    playMicSound(false);
   } else {
-    if (micActive) {
-      micActive = false;
-      isWaitingForAnswer = false;
-      stopRing('mic-ring');
-      playMicSound(false);
-      document.getElementById('mic-area').classList.remove('listening');
-      document.getElementById('mic-status').textContent = 'Tocca per rispondere';
-      document.getElementById('mic-icon').textContent = '🎤';
-      document.getElementById('mic-icon').style.background = 'var(--surface)';
-      showWaveform(false, false);
-    }
+    const area = document.getElementById('mic-area');
+    const status = document.getElementById('mic-status');
+    const icon = document.getElementById('mic-icon');
+    area.classList.remove('listening');
+    status.textContent = 'Tocca per rispondere';
+    icon.textContent = '🎤';
+    icon.style.background = 'var(--surface)';
+    showWaveform(false, false);
+    stopRing('mic-ring');
+    playMicSound(false);
   }
 }
 
 function toggleListening() {
-  if (micActive) stopListening(false);
+  if (currentRecognition && !currentRecognition.isDrillMode) stopListening(false);
   else startListening(false);
 }
 
 function toggleDrillListening() {
-  if (drillMicActive) stopListening(true);
+  if (currentRecognition && currentRecognition.isDrillMode) stopListening(true);
   else startListening(true);
 }
 
@@ -1043,9 +1028,7 @@ function submitManual() {
   const val = document.getElementById('manual-text').value.trim().toLowerCase();
   if (!val) return;
   document.getElementById('manual-text').value = '';
-  if (micActive) stopListening(false);
-  if (drillMicActive) stopListening(true);
-  pendingManualAnswer = true;
+  if (currentRecognition) stopListening(false);
   evaluateAnswer(val, false);
 }
 
@@ -1053,8 +1036,7 @@ function submitDrillManual() {
   const val = document.getElementById('drill-manual-text').value.trim().toLowerCase();
   if (!val) return;
   document.getElementById('drill-manual-text').value = '';
-  if (micActive) stopListening(false);
-  if (drillMicActive) stopListening(true);
+  if (currentRecognition) stopListening(true);
   evaluateAnswer(val, true);
 }
 
@@ -1106,17 +1088,6 @@ function isCorrectAnswer(answer, translationsStr) {
 }
 
 function evaluateAnswer(answer, isDrill) {
-  if (!isWaitingForAnswer && !isDrill && !pendingManualAnswer) return;
-  isWaitingForAnswer = false;
-  pendingManualAnswer = false;
-  
-  if (answer === 'stop' || answer === 'stopp') {
-    stopListening(false);
-    stopListening(true);
-    showEnd();
-    return;
-  }
-  
   const w = isDrill ? drillCurrentWord.word : words[currentIdx];
   let display;
   if (exerciseMode === 'en') {
@@ -1317,7 +1288,6 @@ function nextDrillWord() {
 }
 
 function showWord() {
-  pendingManualAnswer = false;
   const w = words[currentIdx];
   const catLabel = w[2].charAt(0).toUpperCase() + w[2].slice(1);
   const display = (w[2] === 'verbo') ? 'To ' + w[1] : w[1];
@@ -1348,7 +1318,6 @@ function showWord() {
   document.getElementById('mic-icon').textContent = '🎤';
   document.getElementById('mic-icon').style.background = 'var(--surface)';
   document.getElementById('mic-area').classList.remove('listening');
-  micActive = false;
 
   setTimeout(async () => {
     const spokenText = exerciseMode === 'en' ? display : w[3].split(';')[0].trim().split('/')[0].trim();
@@ -1376,8 +1345,10 @@ function confirmDrill(yes) {
 }
 
 function showEnd() {
-  stopListening(false);
-  stopListening(true);
+  if (currentRecognition) {
+    try { currentRecognition.stop(); } catch(e) {}
+    currentRecognition = null;
+  }
   const total = stats.correct + stats.wrong;
   const pct = total > 0 ? Math.round((stats.correct / total) * 100) : 0;
   document.getElementById('stat-correct').textContent = stats.correct;
@@ -1408,15 +1379,19 @@ function repeatNew() {
 }
 
 function goHome() {
-  stopListening(false);
-  stopListening(true);
+  if (currentRecognition) {
+    try { currentRecognition.stop(); } catch(e) {}
+    currentRecognition = null;
+  }
   showScreen('screen-setup');
 }
 
 function terminateExercise() {
   if (window.speechSynthesis) window.speechSynthesis.cancel();
-  stopListening(false);
-  stopListening(true);
+  if (currentRecognition) {
+    try { currentRecognition.stop(); } catch(e) {}
+    currentRecognition = null;
+  }
   localStorage.removeItem('vocabProgress');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const endDiv = document.createElement('div');
@@ -1426,8 +1401,10 @@ function terminateExercise() {
 }
 
 function stopExercise() {
-  stopListening(false);
-  stopListening(true);
+  if (currentRecognition) {
+    try { currentRecognition.stop(); } catch(e) {}
+    currentRecognition = null;
+  }
   showEnd();
 }
 
