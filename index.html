@@ -994,7 +994,7 @@ function startRing(id) {
   r.style.transition = 'none';
   r.style.strokeDashoffset = '0';
   r.getBoundingClientRect();
-  r.style.transition = 'stroke-dashoffset 8000ms linear';
+  r.style.transition = 'stroke-dashoffset 15000ms linear';
   r.style.strokeDashoffset = '440';
 }
 
@@ -1094,7 +1094,7 @@ function startListening(isDrillMode = false) {
     
     currentRecognition.start();
     
-    // Ridotto a 8 secondi per velocizzare il riconoscimento
+    // 15 secondi per assicurare il riconoscimento
     recognitionTimeout = setTimeout(() => {
       if (currentRecognition && currentRecognition.isDrillMode === isDrillMode) {
         stopListening(isDrillMode);
@@ -1114,7 +1114,7 @@ function startListening(isDrillMode = false) {
           }
         }
       }
-    }, 8000);
+    }, 15000);
   }, 500);
 }
 
