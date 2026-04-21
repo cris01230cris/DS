@@ -178,6 +178,7 @@
     50% { border-color: var(--accent-green); box-shadow: 0 0 0 8px rgba(71,255,138,0); }
   }
 
+  /* Pulsante Pausa (angolo superiore destro) */
   .pause-btn {
     position: absolute;
     top: 8px;
@@ -198,6 +199,50 @@
   }
   .pause-btn:active { transform: scale(0.92); }
   .pause-btn.paused { background: #ffaa44; }
+
+  /* Pulsante STOP (angolo inferiore destro) */
+  .stop-circle-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    transition: all 0.2s;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .stop-circle-btn:active { transform: scale(0.92); }
+
+  /* Drill counter (angolo superiore sinistro) */
+  .drill-counter-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    min-width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--error);
+    border: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #000;
+    z-index: 10;
+    padding: 0 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
 
   .mic-wrap {
     position: relative;
@@ -333,7 +378,7 @@
     color: var(--error);
   }
 
-  .drill-counter {
+  .drill-dots {
     display: flex;
     gap: 6px;
     justify-content: center;
@@ -536,7 +581,7 @@
 <div class="container">
   <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0 6px;">
     <span id="mode-label" style="font-weight:600;font-size:0.9rem;color:var(--accent);">EN → IT</span>
-    <span style="font-size:0.65rem;color:var(--muted);">DS2604210900</span>
+    <span style="font-size:0.65rem;color:var(--muted);">DS2604211000</span>
   </div>
 
   <!-- SETUP SCREEN -->
@@ -582,7 +627,6 @@
       <div style="margin-top:6px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div class="word-category" id="word-category"></div>
-          <button onclick="stopExercise()" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:2px 8px;font-weight:700;font-size:0.7rem;cursor:pointer;">STOP</button>
         </div>
         <div class="word-english" id="word-english" onclick="toggleWordVisibility()"></div>
         <button class="speak-btn" onclick="speakCurrentWord()">🔊 Riascolta</button>
@@ -591,6 +635,8 @@
 
     <div class="mic-area" id="mic-area">
       <button class="pause-btn" id="pause-btn" onclick="togglePause()" title="Pausa">⏸️</button>
+      <button class="stop-circle-btn" id="stop-circle-btn" onclick="stopExercise()" title="Stop">⏹️</button>
+      <div class="drill-counter-badge" id="drill-counter-badge" style="display:none;">0</div>
       <div class="mic-wrap" onclick="toggleListening()">
         <div class="mic-icon" id="mic-icon">🎤</div>
         <svg class="mic-ring-svg" viewBox="0 0 120 120">
@@ -643,14 +689,15 @@
       <div class="card-label">Drill · Parole sbagliate</div>
       <div style="display:flex;justify-content:space-between;">
         <div class="word-category" id="drill-category"></div>
-        <button onclick="stopExercise()" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:2px 8px;font-weight:700;font-size:0.7rem;cursor:pointer;">STOP</button>
       </div>
       <div class="word-english" id="drill-word" onclick="toggleWordVisibility()"></div>
       <button class="speak-btn" onclick="speakDrillWord()">🔊 Riascolta</button>
-      <div class="drill-counter" id="drill-dots"></div>
+      <div class="drill-dots" id="drill-dots"></div>
     </div>
     <div class="mic-area" id="drill-mic-area">
       <button class="pause-btn" id="drill-pause-btn" onclick="togglePause()" title="Pausa" style="position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;z-index:10;">⏸️</button>
+      <button class="stop-circle-btn" id="drill-stop-circle-btn" onclick="stopExercise()" title="Stop" style="position:absolute;bottom:8px;right:8px;width:32px;height:32px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.8rem;z-index:10;">⏹️</button>
+      <div class="drill-counter-badge" id="drill-counter-badge-drill" style="display:none;">0</div>
       <div class="mic-wrap" onclick="toggleDrillListening()">
         <div class="mic-icon" id="drill-mic-icon">🎤</div>
         <svg class="mic-ring-svg" viewBox="0 0 120 120">
@@ -725,6 +772,8 @@ let hasReceivedSpeech = false;
 let retryCount = 0;
 let isThinkingPhase = false;
 let currentWordForRetry = null;
+let keepAliveInterval = null;
+let audioCtx = null;
 
 // Variabili per le voci
 let bestItalianVoice = null;
@@ -888,9 +937,31 @@ function confirmCats() {
   drill = [];
   stats = {correct: 0, wrong: 0};
   retryCount = 0;
+  updateDrillCounterBadge();
   saveProgress();
   showScreen('screen-exercise');
   showWord();
+}
+
+function updateDrillCounterBadge() {
+  const badge = document.getElementById('drill-counter-badge');
+  const drillBadge = document.getElementById('drill-counter-badge-drill');
+  if (badge) {
+    if (drill.length > 0) {
+      badge.style.display = 'flex';
+      badge.textContent = drill.length;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+  if (drillBadge) {
+    if (drill.length > 0) {
+      drillBadge.style.display = 'flex';
+      drillBadge.textContent = drill.length;
+    } else {
+      drillBadge.style.display = 'none';
+    }
+  }
 }
 
 function setWordText(elementId, text) {
@@ -947,6 +1018,10 @@ function togglePause() {
     if (currentRecognition) {
       try { currentRecognition.stop(); } catch(e) {}
       currentRecognition = null;
+    }
+    if (keepAliveInterval) {
+      clearInterval(keepAliveInterval);
+      keepAliveInterval = null;
     }
     isListeningActive = false;
     if (recognitionTimeout) {
@@ -1042,22 +1117,39 @@ function stopRing(id) {
   r.style.strokeDashoffset = '440';
 }
 
-function playMicSound(on) {
+function playShortBeep() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
     osc.connect(gain);
-    gain.connect(ctx.destination);
-    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.5, ctx.currentTime + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
-    osc.frequency.setValueAtTime(on ? 880 : 440, ctx.currentTime);
-    osc.type = 'sine';
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.15);
-    osc.onended = () => ctx.close();
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = 1200;
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+    osc.start(now);
+    osc.stop(now + 0.025);
+    osc.onended = () => osc.disconnect();
   } catch(e) {}
+}
+
+function startKeepAliveBeeps() {
+  if (keepAliveInterval) clearInterval(keepAliveInterval);
+  keepAliveInterval = setInterval(() => {
+    if (isListeningActive && currentRecognition) {
+      playShortBeep();
+    }
+  }, 2500);
+}
+
+function stopKeepAliveBeeps() {
+  if (keepAliveInterval) {
+    clearInterval(keepAliveInterval);
+    keepAliveInterval = null;
+  }
 }
 
 function startThinkingPhase(isDrillMode = false) {
@@ -1093,12 +1185,9 @@ function startListeningPhase(isDrillMode = false) {
   const iconId = isDrillMode ? 'drill-mic-icon' : 'mic-icon';
   const ringId = isDrillMode ? 'drill-mic-ring' : 'mic-ring';
   const statusId = isDrillMode ? 'drill-mic-status' : 'mic-status';
-  const transcriptId = isDrillMode ? 'drill-transcript' : 'transcript-preview';
   
-  // Beep prima dell'attivazione
-  playMicSound(true);
-  
-  setTimeout(async () => {
+  // Voce "Parla" prima dell'attivazione
+  speakAsyncLang('Parla', 'it-IT').then(async () => {
     if (isPaused) return;
     
     const hasPermission = await requestMicrophonePermission();
@@ -1111,9 +1200,12 @@ function startListeningPhase(isDrillMode = false) {
     document.getElementById(areaId).classList.remove('thinking');
     document.getElementById(iconId).textContent = '🎤';
     document.getElementById(iconId).style.background = '#1a1a00';
-    document.getElementById(statusId).textContent = 'Parla ora (10 secondi)';
+    document.getElementById(statusId).textContent = 'Ascolto in corso...';
     startRing(ringId, false);
     isListeningActive = true;
+    
+    // Avvia keep-alive beeps
+    startKeepAliveBeeps();
     
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     currentRecognition = new SR();
@@ -1136,24 +1228,19 @@ function startListeningPhase(isDrillMode = false) {
       }
     };
     
-    currentRecognition.onend = () => {
+    currentRecognition.onend = async () => {
       if (currentRecognition && currentRecognition.isDrillMode === isDrillMode) {
         isListeningActive = false;
-      }
-    };
-    
-    currentRecognition.onerror = (e) => {
-      console.log('Recognition error:', e.error);
-      if (currentRecognition && currentRecognition.isDrillMode === isDrillMode) {
-        stopListeningPhase(isDrillMode);
-      }
-    };
-    
-    currentRecognition.start();
-    
-    recognitionTimeout = setTimeout(() => {
-      if (currentRecognition && currentRecognition.isDrillMode === isDrillMode) {
-        stopListeningPhase(isDrillMode);
+        stopKeepAliveBeeps();
+        
+        // Voce "Stop" allo spegnimento reale
+        await speakAsyncLang('Stop', 'it-IT');
+        
+        if (recognitionTimeout) {
+          clearTimeout(recognitionTimeout);
+          recognitionTimeout = null;
+        }
+        
         if (fullTranscript.trim()) {
           retryCount = 0;
           isEvaluating = true;
@@ -1172,8 +1259,24 @@ function startListeningPhase(isDrillMode = false) {
           }
         }
       }
-    }, 10000);
-  }, 500);
+    };
+    
+    currentRecognition.onerror = (e) => {
+      console.log('Recognition error:', e.error);
+      if (currentRecognition && currentRecognition.isDrillMode === isDrillMode) {
+        stopListeningPhase(isDrillMode);
+      }
+    };
+    
+    currentRecognition.start();
+    
+    // Timer di sicurezza (fallback)
+    recognitionTimeout = setTimeout(() => {
+      if (currentRecognition && currentRecognition.isDrillMode === isDrillMode && isListeningActive) {
+        currentRecognition.stop();
+      }
+    }, 12000);
+  });
 }
 
 function stopListeningPhase(isDrillMode = false) {
@@ -1186,6 +1289,7 @@ function stopListeningPhase(isDrillMode = false) {
     currentRecognition = null;
   }
   isListeningActive = false;
+  stopKeepAliveBeeps();
   
   const areaId = isDrillMode ? 'drill-mic-area' : 'mic-area';
   const iconId = isDrillMode ? 'drill-mic-icon' : 'mic-icon';
@@ -1198,9 +1302,6 @@ function stopListeningPhase(isDrillMode = false) {
   document.getElementById(statusId).textContent = '';
   showListeningFeedback(false, isDrillMode);
   stopRing(ringId);
-  
-  // Beep dopo lo spegnimento
-  playMicSound(false);
 }
 
 function startListening(isDrillMode = false) {
@@ -1319,7 +1420,6 @@ function stopConfirmListening() {
   document.getElementById('confirm-mic-icon').style.background = 'var(--surface)';
   showListeningFeedback(false, false, true);
   stopRing('confirm-mic-ring');
-  playMicSound(false);
 }
 
 function toggleConfirmListening() {
@@ -1440,12 +1540,14 @@ function evaluateAnswer(answer, isDrill) {
     } else {
       drillCurrentWord.counter = 0;
     }
+    updateDrillCounterBadge();
   } else {
     if (!correct) {
       const existing = drill.find(d => d.word[0] === w[0]);
       if (!existing) drill.push({word: w, counter: 0});
     }
     if (correct) stats.correct++; else stats.wrong++;
+    updateDrillCounterBadge();
     saveProgress();
     showFeedback(correct, w, display);
   }
@@ -1562,6 +1664,7 @@ function loadProgress() {
     currentIdx = p.currentIdx;
     drill = p.drill.map(d => ({ word: wordMap.get(d.wordId), counter: d.counter })).filter(d => d.word);
     if (currentIdx >= words.length) return false;
+    updateDrillCounterBadge();
     showScreen('screen-exercise');
     showWord();
     showToast('Esercizio ripristinato!');
@@ -1711,6 +1814,7 @@ function showEnd() {
     clearTimeout(thinkingTimeout);
     thinkingTimeout = null;
   }
+  stopKeepAliveBeeps();
   const total = stats.correct + stats.wrong;
   const pct = total > 0 ? Math.round((stats.correct / total) * 100) : 0;
   document.getElementById('stat-correct').textContent = stats.correct;
@@ -1726,6 +1830,7 @@ function repeatSame() {
   W = words.length;
   currentIdx = 0; drill = []; stats = {correct:0, wrong:0};
   retryCount = 0;
+  updateDrillCounterBadge();
   saveProgress();
   showScreen('screen-exercise');
   showWord();
@@ -1738,6 +1843,7 @@ function repeatNew() {
   W = words.length;
   currentIdx = 0; drill = []; stats = {correct:0, wrong:0};
   retryCount = 0;
+  updateDrillCounterBadge();
   saveProgress();
   showScreen('screen-exercise');
   showWord();
@@ -1752,6 +1858,7 @@ function goHome() {
     clearTimeout(thinkingTimeout);
     thinkingTimeout = null;
   }
+  stopKeepAliveBeeps();
   showScreen('screen-setup');
 }
 
@@ -1765,6 +1872,7 @@ function terminateExercise() {
     clearTimeout(thinkingTimeout);
     thinkingTimeout = null;
   }
+  stopKeepAliveBeeps();
   localStorage.removeItem('vocabProgress');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const endDiv = document.createElement('div');
@@ -1782,6 +1890,7 @@ function stopExercise() {
     clearTimeout(thinkingTimeout);
     thinkingTimeout = null;
   }
+  stopKeepAliveBeeps();
   showEnd();
 }
 
