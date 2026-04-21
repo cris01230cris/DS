@@ -2,10 +2,10 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Vocabolario EN→IT</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
 
   :root {
     --bg: #000000;
@@ -13,6 +13,7 @@
     --border: #2a2a32;
     --accent: #e8ff47;
     --accent2: #47ffe8;
+    --accent-green: #47ff8a;
     --text: #f0f0f0;
     --muted: #666;
     --error: #ff4747;
@@ -30,7 +31,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 12px 14px 20px;
+    padding: 8px 10px 12px;
     overflow-x: hidden;
   }
 
@@ -54,35 +55,35 @@
   }
 
   .screen { display: none; }
-  .screen.active { display: flex; flex-direction: column; gap: 10px; }
+  .screen.active { display: flex; flex-direction: column; gap: 8px; }
 
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 12px 14px;
   }
 
   .card-label {
     font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     letter-spacing: 0.15em;
     color: #aaa;
     text-transform: uppercase;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .input-group {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    margin-bottom: 10px;
+    gap: 4px;
+    margin-bottom: 8px;
   }
 
   .input-group label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #ccc;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .input-group input {
@@ -91,8 +92,8 @@
     border-radius: 8px;
     color: var(--text);
     font-family: 'Space Mono', monospace;
-    font-size: 1.2rem;
-    padding: 9px 14px;
+    font-size: 1rem;
+    padding: 8px 12px;
     width: 100%;
     outline: none;
     text-align: center;
@@ -119,7 +120,7 @@
 
   .progress-text {
     font-family: 'Space Mono', monospace;
-    font-size: 0.72rem;
+    font-size: 0.65rem;
     color: #bbb;
     text-align: right;
     margin-top: 4px;
@@ -127,19 +128,19 @@
 
   .word-category {
     font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--accent2);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
   .word-english {
     font-family: 'Space Mono', monospace;
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: var(--accent);
-    line-height: 1.1;
+    line-height: 1.2;
     word-break: break-word;
     cursor: pointer;
   }
@@ -148,11 +149,11 @@
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 16px 16px;
+    padding: 12px 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     transition: border-color 0.3s;
     position: relative;
   }
@@ -162,17 +163,27 @@
     animation: pulse-border 1.5s ease-in-out infinite;
   }
 
+  .mic-area.thinking {
+    border-color: var(--accent-green);
+    animation: pulse-border-green 1.5s ease-in-out infinite;
+  }
+
   @keyframes pulse-border {
     0%, 100% { border-color: var(--accent); box-shadow: 0 0 0 0 rgba(232,255,71,0.2); }
     50% { border-color: var(--accent); box-shadow: 0 0 0 8px rgba(232,255,71,0); }
   }
 
+  @keyframes pulse-border-green {
+    0%, 100% { border-color: var(--accent-green); box-shadow: 0 0 0 0 rgba(71,255,138,0.2); }
+    50% { border-color: var(--accent-green); box-shadow: 0 0 0 8px rgba(71,255,138,0); }
+  }
+
   .pause-btn {
     position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 36px;
-    height: 36px;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: var(--accent);
     border: none;
@@ -180,10 +191,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1rem;
     transition: all 0.2s;
     z-index: 10;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   }
   .pause-btn:active { transform: scale(0.92); }
   .pause-btn.paused { background: #ffaa44; }
@@ -193,32 +204,35 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
   }
   
   .mic-ring-svg {
     position: absolute;
     top: 0; left: 0;
-    width: 150px; height: 150px;
+    width: 120px; height: 120px;
     pointer-events: none;
   }
   
-  .mic-ring-bg { fill: none; stroke: #2a2a32; stroke-width: 6; }
+  .mic-ring-bg { fill: none; stroke: #2a2a32; stroke-width: 5; }
   .mic-ring-fg {
     fill: none;
     stroke: #e8ff47;
-    stroke-width: 6;
+    stroke-width: 5;
     stroke-linecap: round;
     stroke-dasharray: 440;
     stroke-dashoffset: 440;
     transform: rotate(-90deg);
     transform-origin: 50% 50%;
   }
+  .mic-ring-fg.thinking-ring {
+    stroke: var(--accent-green);
+  }
 
   .mic-icon {
-    width: 130px;
-    height: 130px;
+    width: 100px;
+    height: 100px;
     position: relative;
     z-index: 1;
     border-radius: 50%;
@@ -227,59 +241,60 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.8rem;
+    font-size: 2.2rem;
     cursor: pointer;
     transition: all 0.2s;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
   
-  .mic-icon:active { transform: scale(0.92); }
+  .mic-icon:active { transform: scale(0.95); }
   .mic-area.listening .mic-icon {
     background: var(--accent);
     border-color: var(--accent);
     color: var(--bg);
   }
+  .mic-area.thinking .mic-icon {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: var(--bg);
+  }
 
   .mic-status {
-    font-size: 0.78rem;
+    font-size: 0.7rem;
     color: var(--muted);
     text-align: center;
   }
 
-  .mic-area.listening .mic-status {
-    color: var(--accent);
-  }
-
   .listening-feedback {
-    font-size: 1.3rem;
+    font-size: 1rem;
     font-weight: bold;
     text-align: center;
-    padding: 12px 20px;
-    border-radius: 50px;
-    margin-top: 8px;
+    padding: 8px 16px;
+    border-radius: 40px;
+    margin-top: 6px;
     display: none;
     background: var(--accent);
     color: var(--bg);
     letter-spacing: 1px;
     animation: blink-fast 0.4s ease-in-out infinite;
-    border: 3px solid #ffffff;
-    box-shadow: 0 0 20px var(--accent);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 15px var(--accent);
   }
 
   @keyframes blink-fast {
     0%, 100% { opacity: 1; background: var(--accent); transform: scale(1); }
-    50% { opacity: 0.7; background: #d4e63e; transform: scale(1.02); box-shadow: 0 0 30px var(--accent); }
+    50% { opacity: 0.7; background: #d4e63e; transform: scale(1.01); box-shadow: 0 0 20px var(--accent); }
   }
 
   .feedback {
     border-radius: 10px;
-    padding: 10px 14px;
+    padding: 8px 12px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     font-family: 'Space Mono', monospace;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     opacity: 0;
     transform: translateY(4px);
     transition: opacity 0.25s, transform 0.25s;
@@ -302,8 +317,8 @@
     color: var(--error);
   }
 
-  .feedback-icon { font-size: 1.2rem; }
-  .feedback-text { flex: 1; line-height: 1.4; }
+  .feedback-icon { font-size: 1rem; }
+  .feedback-text { flex: 1; line-height: 1.3; }
 
   .drill-badge {
     display: inline-flex;
@@ -312,27 +327,27 @@
     background: rgba(255,71,71,0.1);
     border: 1px solid rgba(255,71,71,0.3);
     border-radius: 20px;
-    padding: 4px 10px;
+    padding: 3px 8px;
     font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: var(--error);
   }
 
   .drill-counter {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     justify-content: center;
-    margin-top: 8px;
+    margin-top: 6px;
   }
   .drill-dot {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: var(--border);
     transition: background 0.3s;
   }
   .drill-dot.filled { background: var(--success); }
-  .drill-dot.current { background: var(--drill-current); box-shadow: 0 0 8px var(--drill-current); }
+  .drill-dot.current { background: var(--drill-current); box-shadow: 0 0 6px var(--drill-current); }
 
   .btn {
     border: none;
@@ -340,14 +355,14 @@
     cursor: pointer;
     font-family: 'DM Sans', sans-serif;
     font-weight: 600;
-    font-size: 0.88rem;
-    padding: 11px 16px;
+    font-size: 0.85rem;
+    padding: 10px 14px;
     transition: all 0.15s;
     width: 100%;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
   }
-  .btn:active { transform: scale(0.97); }
+  .btn:active { transform: scale(0.98); }
   .btn-primary {
     background: var(--accent);
     color: var(--bg);
@@ -357,7 +372,7 @@
     color: var(--text);
     border: 1px solid var(--border);
   }
-  .btn-secondary:active { transform: scale(0.97); background: rgba(255,255,255,0.05); }
+  .btn-secondary:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
   
   .speak-btn {
     background: var(--accent);
@@ -365,60 +380,60 @@
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 0.9rem;
-    padding: 7px 16px;
-    margin-top: 8px;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    margin-top: 6px;
     font-weight: 700;
     width: 100%;
     transition: all 0.15s;
   }
-  .speak-btn:active { transform: scale(0.97); background: #d4e63e; }
+  .speak-btn:active { transform: scale(0.98); background: #d4e63e; }
   
   .btn-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
   }
   .arr { color: var(--accent); font-weight: 700; }
 
   .stat-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
     margin-bottom: 4px;
   }
   .stat-box {
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 10px;
+    padding: 8px;
     text-align: center;
   }
   .stat-value {
     font-family: 'Space Mono', monospace;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--accent);
   }
   .stat-label {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: #bbb;
     font-weight: 600;
-    margin-top: 4px;
+    margin-top: 2px;
     text-transform: uppercase;
   }
 
   .info-bar {
-    margin-top: 10px;
+    margin-top: 8px;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 12px;
+    padding: 8px;
     display: flex;
     justify-content: space-between;
   }
   .info-bar span:first-child {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: #bbb;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -426,7 +441,7 @@
   }
   .info-bar span:last-child {
     font-family: 'Space Mono', monospace;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--accent);
   }
 
@@ -437,7 +452,7 @@
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 9px 13px;
+    padding: 8px 12px;
     cursor: pointer;
     transition: border-color 0.2s;
   }
@@ -447,18 +462,18 @@
   }
   .cat-toggle-label {
     font-family: 'Space Mono', monospace;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     text-transform: capitalize;
   }
   .cat-toggle-check {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     border: 2px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     transition: all 0.2s;
   }
   .cat-toggle.selected .cat-toggle-check {
@@ -470,15 +485,15 @@
   .manual-input {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
   .manual-input input {
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 8px;
     color: var(--text);
-    font-size: 1rem;
-    padding: 10px 14px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
     width: 100%;
     outline: none;
     font-family: 'DM Sans', sans-serif;
@@ -487,9 +502,9 @@
 
   .error-msg {
     color: var(--error);
-    font-size: 0.78rem;
+    font-size: 0.7rem;
     text-align: center;
-    padding: 8px;
+    padding: 6px;
     display: none;
   }
   .error-msg.show { display: block; }
@@ -501,9 +516,10 @@
     transform: translateX(-50%);
     background: var(--accent);
     color: #000;
-    padding: 10px 20px;
+    padding: 8px 16px;
     border-radius: 30px;
     font-weight: bold;
+    font-size: 0.8rem;
     z-index: 1000;
     animation: fadeOut 2s ease forwards;
     pointer-events: none;
@@ -518,9 +534,9 @@
 </head>
 <body>
 <div class="container">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 10px;">
-    <span id="mode-label" style="font-weight:600;font-size:1rem;color:var(--accent);">EN → IT</span>
-    <span style="font-size:0.75rem;color:var(--muted);">DS2604210800</span>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0 6px;">
+    <span id="mode-label" style="font-weight:600;font-size:0.9rem;color:var(--accent);">EN → IT</span>
+    <span style="font-size:0.65rem;color:var(--muted);">DS2604210900</span>
   </div>
 
   <!-- SETUP SCREEN -->
@@ -531,26 +547,26 @@
         <input type="number" id="input-S" min="1" max="1000" placeholder="1" inputmode="numeric" value="1">
       </div>
       <div class="input-group">
-        <label>Quante parole vuoi tradurre? (1-50)</label>
-        <input type="number" id="input-W" min="1" max="50" placeholder="10" inputmode="numeric" value="10">
+        <label>Quante parole vuoi tradurre? (1-30)</label>
+        <input type="number" id="input-W" min="1" max="30" placeholder="10" inputmode="numeric" value="10">
       </div>
       <div class="input-group">
-        <label>Quanti secondi vuoi per tradurre? (10-30)</label>
-        <input type="number" id="input-T" min="10" max="30" placeholder="15" inputmode="numeric" value="15">
+        <label>Quanti secondi vuoi prima di tradurre? (3-10)</label>
+        <input type="number" id="input-T" min="3" max="10" placeholder="5" inputmode="numeric" value="5">
       </div>
       <div id="setup-error" class="error-msg"></div>
     </div>
-    <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px;">
-      <button id="btn-mode-en" onclick="setMode('en')" style="flex:1;padding:12px 8px;border:none;cursor:pointer;font-weight:700;font-size:1rem;color:#000;background:var(--accent);">EN → IT</button>
-      <button id="btn-mode-it" onclick="setMode('it')" style="flex:1;padding:12px 8px;border:none;cursor:pointer;font-weight:700;font-size:1rem;color:#888;background:var(--surface);">IT → EN</button>
+    <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:6px;">
+      <button id="btn-mode-en" onclick="setMode('en')" style="flex:1;padding:10px 6px;border:none;cursor:pointer;font-weight:700;font-size:0.85rem;color:#000;background:var(--accent);">EN → IT</button>
+      <button id="btn-mode-it" onclick="setMode('it')" style="flex:1;padding:10px 6px;border:none;cursor:pointer;font-weight:700;font-size:0.85rem;color:#888;background:var(--surface);">IT → EN</button>
     </div>
     <button class="btn btn-primary" onclick="startExercise()" style="color:#000;font-weight:700;">Inizia esercizio <span class="arr">→</span></button>
-    <button class="btn btn-secondary" onclick="loadProgress()" style="margin-top:5px;">↻ Riprendi ultimo esercizio</button>
+    <button class="btn btn-secondary" onclick="loadProgress()" style="margin-top:4px;">↻ Riprendi ultimo esercizio</button>
   </div>
 
   <!-- CATEGORY SCREEN -->
   <div id="screen-cats" class="screen">
-    <div class="card"><div id="cat-list" style="display:flex;flex-direction:column;gap:12px;"></div></div>
+    <div class="card"><div id="cat-list" style="display:flex;flex-direction:column;gap:8px;"></div></div>
     <button class="btn btn-primary" onclick="confirmCats()" style="color:#000;font-weight:700;">Conferma →</button>
     <button class="btn btn-secondary" onclick="showScreen('screen-setup')">← Torna</button>
   </div>
@@ -558,7 +574,7 @@
   <!-- EXERCISE SCREEN -->
   <div id="screen-exercise" class="screen">
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <div id="ex-progress-label" class="progress-text" style="margin:0;text-align:left;"></div>
         <div id="drill-badge" class="drill-badge" style="display:none;">⚡ DRILL <span id="drill-count">0</span></div>
       </div>
@@ -566,7 +582,7 @@
       <div style="margin-top:6px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div class="word-category" id="word-category"></div>
-          <button onclick="stopExercise()" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:3px 10px;font-weight:700;cursor:pointer;">STOP</button>
+          <button onclick="stopExercise()" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:2px 8px;font-weight:700;font-size:0.7rem;cursor:pointer;">STOP</button>
         </div>
         <div class="word-english" id="word-english" onclick="toggleWordVisibility()"></div>
         <button class="speak-btn" onclick="speakCurrentWord()">🔊 Riascolta</button>
@@ -577,9 +593,9 @@
       <button class="pause-btn" id="pause-btn" onclick="togglePause()" title="Pausa">⏸️</button>
       <div class="mic-wrap" onclick="toggleListening()">
         <div class="mic-icon" id="mic-icon">🎤</div>
-        <svg class="mic-ring-svg" viewBox="0 0 150 150">
-          <circle class="mic-ring-bg" cx="75" cy="75" r="70"/>
-          <circle class="mic-ring-fg" id="mic-ring" cx="75" cy="75" r="70"/>
+        <svg class="mic-ring-svg" viewBox="0 0 120 120">
+          <circle class="mic-ring-bg" cx="60" cy="60" r="55"/>
+          <circle class="mic-ring-fg" id="mic-ring" cx="60" cy="60" r="55"/>
         </svg>
       </div>
       <div class="mic-status" id="mic-status"></div>
@@ -588,7 +604,7 @@
 
     <div class="manual-input" id="manual-input">
       <input type="text" id="manual-text" placeholder="Scrivi la traduzione..." autocomplete="off" spellcheck="false">
-      <button class="btn btn-primary" onclick="submitManual()" style="color:#000;font-weight:700;padding:14px;">Conferma</button>
+      <button class="btn btn-primary" onclick="submitManual()" style="color:#000;font-weight:700;padding:10px;">Conferma</button>
     </div>
 
     <div class="feedback" id="feedback">
@@ -601,15 +617,15 @@
   <div id="screen-drill-confirm" class="screen">
     <div class="card">
       <div class="card-label">Drill · Parole sbagliate</div>
-      <p style="font-size:0.95rem; margin-bottom:8px;">Vuoi consolidare le <span id="drill-confirm-count" style="color:var(--error); font-weight:700;"></span> parole sbagliate?</p>
-      <p style="font-size:0.78rem; color:var(--muted);">Ogni parola va tradotta correttamente 3 volte di fila.</p>
+      <p style="font-size:0.85rem; margin-bottom:6px;">Vuoi consolidare le <span id="drill-confirm-count" style="color:var(--error); font-weight:700;"></span> parole sbagliate?</p>
+      <p style="font-size:0.7rem; color:var(--muted);">Ogni parola va tradotta correttamente 3 volte di fila.</p>
     </div>
     <div class="mic-area" id="drill-confirm-mic-area">
       <div class="mic-wrap" onclick="toggleConfirmListening()">
         <div class="mic-icon" id="confirm-mic-icon">🎤</div>
-        <svg class="mic-ring-svg" viewBox="0 0 150 150">
-          <circle class="mic-ring-bg" cx="75" cy="75" r="70"/>
-          <circle class="mic-ring-fg" id="confirm-mic-ring" cx="75" cy="75" r="70"/>
+        <svg class="mic-ring-svg" viewBox="0 0 120 120">
+          <circle class="mic-ring-bg" cx="60" cy="60" r="55"/>
+          <circle class="mic-ring-fg" id="confirm-mic-ring" cx="60" cy="60" r="55"/>
         </svg>
       </div>
       <div class="mic-status" id="confirm-mic-status"></div>
@@ -627,19 +643,19 @@
       <div class="card-label">Drill · Parole sbagliate</div>
       <div style="display:flex;justify-content:space-between;">
         <div class="word-category" id="drill-category"></div>
-        <button onclick="stopExercise()" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:3px 10px;font-weight:700;cursor:pointer;">STOP</button>
+        <button onclick="stopExercise()" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:2px 8px;font-weight:700;font-size:0.7rem;cursor:pointer;">STOP</button>
       </div>
       <div class="word-english" id="drill-word" onclick="toggleWordVisibility()"></div>
       <button class="speak-btn" onclick="speakDrillWord()">🔊 Riascolta</button>
       <div class="drill-counter" id="drill-dots"></div>
     </div>
     <div class="mic-area" id="drill-mic-area">
-      <button class="pause-btn" id="drill-pause-btn" onclick="togglePause()" title="Pausa" style="position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;z-index:10;">⏸️</button>
+      <button class="pause-btn" id="drill-pause-btn" onclick="togglePause()" title="Pausa" style="position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;z-index:10;">⏸️</button>
       <div class="mic-wrap" onclick="toggleDrillListening()">
         <div class="mic-icon" id="drill-mic-icon">🎤</div>
-        <svg class="mic-ring-svg" viewBox="0 0 150 150">
-          <circle class="mic-ring-bg" cx="75" cy="75" r="70"/>
-          <circle class="mic-ring-fg" id="drill-mic-ring" cx="75" cy="75" r="70"/>
+        <svg class="mic-ring-svg" viewBox="0 0 120 120">
+          <circle class="mic-ring-bg" cx="60" cy="60" r="55"/>
+          <circle class="mic-ring-fg" id="drill-mic-ring" cx="60" cy="60" r="55"/>
         </svg>
       </div>
       <div class="mic-status" id="drill-mic-status"></div>
@@ -673,7 +689,7 @@
     <button class="btn btn-primary" onclick="repeatSame()"><span class="arr">↻</span> Stesse parole</button>
     <button class="btn btn-secondary" onclick="repeatNew()">Parole nuove →</button>
     <button class="btn btn-secondary" onclick="goHome()">← Dall'inizio</button>
-    <button class="btn btn-secondary" style="margin-top:12px;" onclick="terminateExercise()">✕ Termina</button>
+    <button class="btn btn-secondary" style="margin-top:8px;" onclick="terminateExercise()">✕ Termina</button>
   </div>
 </div>
 
@@ -686,7 +702,7 @@ const RAW = [
 ];
 
 // ==================== FUNZIONI PRINCIPALI ====================
-let S = 1, W = 10, T = 15;
+let S = 1, W = 10, T = 5;
 let words = [];
 let currentIdx = 0;
 let drill = [];
@@ -704,9 +720,11 @@ let isEvaluating = false;
 let isPaused = false;
 let fullTranscript = '';
 let recognitionTimeout = null;
+let thinkingTimeout = null;
 let hasReceivedSpeech = false;
 let retryCount = 0;
-let maxRetries = 10;
+let isThinkingPhase = false;
+let currentWordForRetry = null;
 
 // Variabili per le voci
 let bestItalianVoice = null;
@@ -814,12 +832,12 @@ function startExercise() {
     errEl.textContent = 'Inserisci un numero valido per S (1–1000)';
     errEl.classList.add('show'); return;
   }
-  if (!wVal || wVal < 1 || wVal > 50) {
-    errEl.textContent = 'Inserisci un numero valido per W (1–50)';
+  if (!wVal || wVal < 1 || wVal > 30) {
+    errEl.textContent = 'Inserisci un numero valido per W (1–30)';
     errEl.classList.add('show'); return;
   }
-  if (!tVal || tVal < 10 || tVal > 30) {
-    errEl.textContent = 'Inserisci un numero valido per T (10–30)';
+  if (!tVal || tVal < 3 || tVal > 10) {
+    errEl.textContent = 'Inserisci un numero valido per T (3–10)';
     errEl.classList.add('show'); return;
   }
   errEl.classList.remove('show');
@@ -935,8 +953,12 @@ function togglePause() {
       clearTimeout(recognitionTimeout);
       recognitionTimeout = null;
     }
+    if (thinkingTimeout) {
+      clearTimeout(thinkingTimeout);
+      thinkingTimeout = null;
+    }
     const micAreas = document.querySelectorAll('.mic-area');
-    micAreas.forEach(area => area.classList.remove('listening'));
+    micAreas.forEach(area => area.classList.remove('listening', 'thinking'));
     const feedbacks = document.querySelectorAll('.listening-feedback');
     feedbacks.forEach(fb => fb.style.display = 'none');
     const micIcons = document.querySelectorAll('.mic-icon');
@@ -997,13 +1019,19 @@ function showListeningFeedback(show, isDrill = false, isConfirm = false) {
   if (fb) fb.style.display = show ? 'block' : 'none';
 }
 
-function startRing(id) {
+function startRing(id, isGreen = false) {
   const r = document.getElementById(id);
   if (!r) return;
   r.style.transition = 'none';
   r.style.strokeDashoffset = '0';
+  if (isGreen) {
+    r.classList.add('thinking-ring');
+  } else {
+    r.classList.remove('thinking-ring');
+  }
   r.getBoundingClientRect();
-  r.style.transition = `stroke-dashoffset ${T * 1000}ms linear`;
+  const duration = isGreen ? T * 1000 : 10000;
+  r.style.transition = `stroke-dashoffset ${duration}ms linear`;
   r.style.strokeDashoffset = '440';
 }
 
@@ -1032,39 +1060,59 @@ function playMicSound(on) {
   } catch(e) {}
 }
 
-function startListening(isDrillMode = false) {
-  if (isPaused) {
-    showToast('Esercizio in pausa. Premi ▶️ per riprendere');
-    return;
-  }
-  if (!speechSupported) {
-    showToast('Il tuo browser non supporta il riconoscimento vocale');
-    return;
-  }
-  if (currentRecognition) return;
-  if (isEvaluating) return;
+function startThinkingPhase(isDrillMode = false) {
+  if (isPaused) return;
+  isThinkingPhase = true;
   
-  fullTranscript = '';
-  hasReceivedSpeech = false;
+  const areaId = isDrillMode ? 'drill-mic-area' : 'mic-area';
+  const iconId = isDrillMode ? 'drill-mic-icon' : 'mic-icon';
+  const ringId = isDrillMode ? 'drill-mic-ring' : 'mic-ring';
   
-  // Beep di inizio (microfono ancora spento)
+  document.getElementById(areaId).classList.add('thinking');
+  document.getElementById(areaId).classList.remove('listening');
+  document.getElementById(iconId).textContent = '💭';
+  document.getElementById(iconId).style.background = 'var(--surface)';
+  startRing(ringId, true);
+  
+  const statusEl = document.getElementById(isDrillMode ? 'drill-mic-status' : 'mic-status');
+  statusEl.textContent = `Pensa per ${T} secondi...`;
+  
+  thinkingTimeout = setTimeout(() => {
+    if (isPaused) return;
+    isThinkingPhase = false;
+    document.getElementById(areaId).classList.remove('thinking');
+    stopRing(ringId);
+    startListeningPhase(isDrillMode);
+  }, T * 1000);
+}
+
+function startListeningPhase(isDrillMode = false) {
+  if (isPaused) return;
+  
+  const areaId = isDrillMode ? 'drill-mic-area' : 'mic-area';
+  const iconId = isDrillMode ? 'drill-mic-icon' : 'mic-icon';
+  const ringId = isDrillMode ? 'drill-mic-ring' : 'mic-ring';
+  const statusId = isDrillMode ? 'drill-mic-status' : 'mic-status';
+  const transcriptId = isDrillMode ? 'drill-transcript' : 'transcript-preview';
+  
+  // Beep prima dell'attivazione
   playMicSound(true);
   
-  // Attendi 0.5 secondi prima di attivare il microfono
   setTimeout(async () => {
     if (isPaused) return;
     
     const hasPermission = await requestMicrophonePermission();
     if (!hasPermission) return;
     
-    const areaId = isDrillMode ? 'drill-mic-area' : 'mic-area';
-    const iconId = isDrillMode ? 'drill-mic-icon' : 'mic-icon';
-    const ringId = isDrillMode ? 'drill-mic-ring' : 'mic-ring';
+    fullTranscript = '';
+    hasReceivedSpeech = false;
     
     document.getElementById(areaId).classList.add('listening');
+    document.getElementById(areaId).classList.remove('thinking');
     document.getElementById(iconId).textContent = '🎤';
     document.getElementById(iconId).style.background = '#1a1a00';
-    startRing(ringId);
+    document.getElementById(statusId).textContent = 'Parla ora (10 secondi)';
+    startRing(ringId, false);
     isListeningActive = true;
     
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1097,36 +1145,38 @@ function startListening(isDrillMode = false) {
     currentRecognition.onerror = (e) => {
       console.log('Recognition error:', e.error);
       if (currentRecognition && currentRecognition.isDrillMode === isDrillMode) {
-        stopListening(isDrillMode);
+        stopListeningPhase(isDrillMode);
       }
     };
     
     currentRecognition.start();
     
-    // Timeout basato su T (secondi)
     recognitionTimeout = setTimeout(() => {
       if (currentRecognition && currentRecognition.isDrillMode === isDrillMode) {
-        stopListening(isDrillMode);
+        stopListeningPhase(isDrillMode);
         if (fullTranscript.trim()) {
           retryCount = 0;
           isEvaluating = true;
           evaluateAnswer(fullTranscript.trim().toLowerCase(), isDrillMode);
         } else {
-          // Nessuna parola riconosciuta - loop sulla stessa parola
           retryCount++;
           showToast(`Nessuna parola riconosciuta. Tentativo ${retryCount}`);
           if (!isDrillMode) {
             setTimeout(() => {
               showWord();
             }, 2000);
+          } else {
+            setTimeout(() => {
+              startThinkingPhase(true);
+            }, 2000);
           }
         }
       }
-    }, T * 1000);
+    }, 10000);
   }, 500);
 }
 
-function stopListening(isDrillMode = false) {
+function stopListeningPhase(isDrillMode = false) {
   if (recognitionTimeout) {
     clearTimeout(recognitionTimeout);
     recognitionTimeout = null;
@@ -1140,14 +1190,41 @@ function stopListening(isDrillMode = false) {
   const areaId = isDrillMode ? 'drill-mic-area' : 'mic-area';
   const iconId = isDrillMode ? 'drill-mic-icon' : 'mic-icon';
   const ringId = isDrillMode ? 'drill-mic-ring' : 'mic-ring';
+  const statusId = isDrillMode ? 'drill-mic-status' : 'mic-status';
   
   document.getElementById(areaId).classList.remove('listening');
   document.getElementById(iconId).textContent = '🎤';
   document.getElementById(iconId).style.background = 'var(--surface)';
+  document.getElementById(statusId).textContent = '';
   showListeningFeedback(false, isDrillMode);
   stopRing(ringId);
   
+  // Beep dopo lo spegnimento
   playMicSound(false);
+}
+
+function startListening(isDrillMode = false) {
+  if (isPaused) {
+    showToast('Esercizio in pausa. Premi ▶️ per riprendere');
+    return;
+  }
+  if (!speechSupported) {
+    showToast('Il tuo browser non supporta il riconoscimento vocale');
+    return;
+  }
+  if (currentRecognition) return;
+  if (isEvaluating) return;
+  
+  startThinkingPhase(isDrillMode);
+}
+
+function stopListening(isDrillMode = false) {
+  if (thinkingTimeout) {
+    clearTimeout(thinkingTimeout);
+    thinkingTimeout = null;
+  }
+  stopListeningPhase(isDrillMode);
+  isThinkingPhase = false;
 }
 
 function toggleListening() {
@@ -1184,7 +1261,7 @@ function startConfirmListening() {
     document.getElementById('drill-confirm-mic-area').classList.add('listening');
     document.getElementById('confirm-mic-icon').textContent = '🎤';
     document.getElementById('confirm-mic-icon').style.background = '#1a1a00';
-    startRing('confirm-mic-ring');
+    startRing('confirm-mic-ring', false);
     
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     confirmRecognition = new SR();
@@ -1228,7 +1305,7 @@ function startConfirmListening() {
           showToast('Non ho capito. Usa i pulsanti Sì/No.');
         }
       }
-    }, T * 1000);
+    }, 10000);
   });
 }
 
@@ -1259,6 +1336,11 @@ function submitManual() {
   if (!val) return;
   document.getElementById('manual-text').value = '';
   if (currentRecognition) stopListening(false);
+  if (thinkingTimeout) {
+    clearTimeout(thinkingTimeout);
+    thinkingTimeout = null;
+  }
+  isThinkingPhase = false;
   if (!isEvaluating) {
     retryCount = 0;
     isEvaluating = true;
@@ -1275,6 +1357,11 @@ function submitDrillManual() {
   if (!val) return;
   document.getElementById('drill-manual-text').value = '';
   if (currentRecognition) stopListening(true);
+  if (thinkingTimeout) {
+    clearTimeout(thinkingTimeout);
+    thinkingTimeout = null;
+  }
+  isThinkingPhase = false;
   if (!isEvaluating) {
     isEvaluating = true;
     evaluateAnswer(val, true);
@@ -1464,7 +1551,7 @@ function loadProgress() {
       showToast('Esercizio scaduto (più di 24 ore)');
       return false;
     }
-    S = p.S; W = p.W; T = p.T || 15;
+    S = p.S; W = p.W; T = p.T || 5;
     stats = p.stats;
     exerciseMode = p.exerciseMode;
     setMode(exerciseMode);
@@ -1575,9 +1662,11 @@ function showWord() {
   hideFeedback('feedback');
   document.getElementById('mic-icon').textContent = '🎤';
   document.getElementById('mic-icon').style.background = 'var(--surface)';
-  document.getElementById('mic-area').classList.remove('listening');
+  document.getElementById('mic-area').classList.remove('listening', 'thinking');
   document.getElementById('manual-text').value = '';
   showListeningFeedback(false, false);
+  const statusEl = document.getElementById('mic-status');
+  if (statusEl) statusEl.textContent = '';
 
   setTimeout(async () => {
     if (isPaused) return;
@@ -1618,6 +1707,10 @@ function showEnd() {
     try { currentRecognition.stop(); } catch(e) {}
     currentRecognition = null;
   }
+  if (thinkingTimeout) {
+    clearTimeout(thinkingTimeout);
+    thinkingTimeout = null;
+  }
   const total = stats.correct + stats.wrong;
   const pct = total > 0 ? Math.round((stats.correct / total) * 100) : 0;
   document.getElementById('stat-correct').textContent = stats.correct;
@@ -1655,6 +1748,10 @@ function goHome() {
     try { currentRecognition.stop(); } catch(e) {}
     currentRecognition = null;
   }
+  if (thinkingTimeout) {
+    clearTimeout(thinkingTimeout);
+    thinkingTimeout = null;
+  }
   showScreen('screen-setup');
 }
 
@@ -1663,6 +1760,10 @@ function terminateExercise() {
   if (currentRecognition) {
     try { currentRecognition.stop(); } catch(e) {}
     currentRecognition = null;
+  }
+  if (thinkingTimeout) {
+    clearTimeout(thinkingTimeout);
+    thinkingTimeout = null;
   }
   localStorage.removeItem('vocabProgress');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1676,6 +1777,10 @@ function stopExercise() {
   if (currentRecognition) {
     try { currentRecognition.stop(); } catch(e) {}
     currentRecognition = null;
+  }
+  if (thinkingTimeout) {
+    clearTimeout(thinkingTimeout);
+    thinkingTimeout = null;
   }
   showEnd();
 }
