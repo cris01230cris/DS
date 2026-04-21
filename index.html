@@ -178,7 +178,6 @@
     50% { border-color: var(--accent-green); box-shadow: 0 0 0 8px rgba(71,255,138,0); }
   }
 
-  /* Pulsante Pausa (angolo superiore destro) */
   .pause-btn {
     position: absolute;
     top: 8px;
@@ -200,7 +199,6 @@
   .pause-btn:active { transform: scale(0.92); }
   .pause-btn.paused { background: #ffaa44; }
 
-  /* Pulsante STOP (angolo inferiore destro) */
   .stop-circle-btn {
     position: absolute;
     bottom: 8px;
@@ -222,7 +220,6 @@
   }
   .stop-circle-btn:active { transform: scale(0.92); }
 
-  /* Drill counter (angolo superiore sinistro) */
   .drill-counter-badge {
     position: absolute;
     top: 8px;
@@ -364,19 +361,6 @@
 
   .feedback-icon { font-size: 1rem; }
   .feedback-text { flex: 1; line-height: 1.3; }
-
-  .drill-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255,71,71,0.1);
-    border: 1px solid rgba(255,71,71,0.3);
-    border-radius: 20px;
-    padding: 3px 8px;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--error);
-  }
 
   .drill-dots {
     display: flex;
@@ -581,7 +565,7 @@
 <div class="container">
   <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0 6px;">
     <span id="mode-label" style="font-weight:600;font-size:0.9rem;color:var(--accent);">EN → IT</span>
-    <span style="font-size:0.65rem;color:var(--muted);">DS2604211000</span>
+    <span style="font-size:0.65rem;color:var(--muted);">DS2604211200</span>
   </div>
 
   <!-- SETUP SCREEN -->
@@ -621,7 +605,6 @@
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <div id="ex-progress-label" class="progress-text" style="margin:0;text-align:left;"></div>
-        <div id="drill-badge" class="drill-badge" style="display:none;">⚡ DRILL <span id="drill-count">0</span></div>
       </div>
       <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
       <div style="margin-top:6px;">
@@ -771,7 +754,6 @@ let thinkingTimeout = null;
 let hasReceivedSpeech = false;
 let retryCount = 0;
 let isThinkingPhase = false;
-let currentWordForRetry = null;
 let keepAliveInterval = null;
 let audioCtx = null;
 
@@ -1754,14 +1736,6 @@ function showWord() {
   document.getElementById('progress-fill').style.width = pct + '%';
   document.getElementById('ex-progress-label').textContent = `Parola ${currentIdx + 1} di ${W} da ${S}`;
   
-  const db = document.getElementById('drill-badge');
-  if (drill.length > 0) {
-    db.style.display = 'flex';
-    document.getElementById('drill-count').textContent = drill.length;
-  } else {
-    db.style.display = 'none';
-  }
-
   hideFeedback('feedback');
   document.getElementById('mic-icon').textContent = '🎤';
   document.getElementById('mic-icon').style.background = 'var(--surface)';
