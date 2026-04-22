@@ -446,7 +446,7 @@
 <div class="container">
   <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0 6px;">
     <span id="mode-label" style="font-weight:600;font-size:0.9rem;color:var(--accent);">EN → IT</span>
-    <span style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono';">DS26042213</span>
+    <span style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono';">DS26042214</span>
   </div>
 
   <!-- SETUP -->
@@ -472,7 +472,7 @@
 
   <!-- CATEGORIE -->
   <div id="screen-cats" class="screen">
-    <div class="card"><div id="cat-list" style="display:flex;flex-direction:column;gap:10px;"></div></div>
+    <div class="card"><div id="cat-list" style="display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto;"></div></div>
     <button class="btn btn-primary" onclick="confirmCats()">Conferma →</button>
     <button class="btn btn-secondary" onclick="showScreen('screen-setup')">← Indietro</button>
   </div>
@@ -585,6 +585,20 @@ let pendingEvalTimeout = null;
 let isHolding = false;
 let currentTranscript = '';
 
+// --- Funzioni per salvare/caricare parametri S e W ---
+function saveLastParams() {
+    localStorage.setItem('lastS', S);
+    localStorage.setItem('lastW', W);
+}
+function loadLastParams() {
+    const savedS = localStorage.getItem('lastS');
+    const savedW = localStorage.getItem('lastW');
+    if (savedS !== null && !isNaN(parseInt(savedS))) S = parseInt(savedS);
+    if (savedW !== null && !isNaN(parseInt(savedW))) W = parseInt(savedW);
+    document.getElementById('input-S').value = S;
+    document.getElementById('input-W').value = W;
+}
+
 function getBestItalianVoice() { if(bestItalianVoice)return bestItalianVoice; const voices=window.speechSynthesis.getVoices(); const pref=['Google','Alice','Federica','Silvia','Luca','it-IT']; for(let p of pref){let v=voices.find(v=>v.lang==='it-IT'&&v.name.includes(p));if(v){bestItalianVoice=v;return v;}} bestItalianVoice=voices.find(v=>v.lang==='it-IT')||voices[0]; return bestItalianVoice;}
 function getBestEnglishVoice() { if(bestEnglishVoice)return bestEnglishVoice; const voices=window.speechSynthesis.getVoices(); const pref=['Google','Samantha','Karen','en-US']; for(let p of pref){let v=voices.find(v=>v.lang==='en-US'&&v.name.includes(p));if(v){bestEnglishVoice=v;return v;}} bestEnglishVoice=voices.find(v=>v.lang==='en-US')||voices[0]; return bestEnglishVoice;}
 function speakAsyncLang(text, lang){if(!window.speechSynthesis)return Promise.resolve(); window.speechSynthesis.cancel(); return new Promise(resolve=>{const u=new SpeechSynthesisUtterance(text); u.lang=lang; u.rate=0.85; if(lang==='it-IT'){let v=getBestItalianVoice(); if(v)u.voice=v;} else if(lang==='en-US'){let v=getBestEnglishVoice(); if(v)u.voice=v;} u.onend=resolve; u.onerror=resolve; window.speechSynthesis.speak(u); setTimeout(resolve, Math.max(1500, text.length*80));});}
@@ -593,7 +607,7 @@ function getWords(s,w){const eligible=[]; for(let i=s-1;i<RAW.length&&eligible.l
 function shuffle(arr){let a=[...arr]; for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a;}
 function setMode(mode){exerciseMode=mode; document.getElementById('mode-label').textContent=mode==='en'?'EN → IT':'IT → EN'; const btnEn=document.getElementById('btn-mode-en'),btnIt=document.getElementById('btn-mode-it'); if(mode==='en'){btnEn.style.background='var(--accent)';btnEn.style.color='#000';btnIt.style.background='var(--surface)';btnIt.style.color='#888';}else{btnIt.style.background='var(--accent)';btnIt.style.color='#000';btnEn.style.background='var(--surface)';btnEn.style.color='#888';}}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active');}
-function startExercise(){const sVal=parseInt(document.getElementById('input-S').value); const wVal=parseInt(document.getElementById('input-W').value); const err=document.getElementById('setup-error'); if(!sVal||sVal<1||sVal>1000){err.textContent='S (1–1000)';err.classList.add('show');return;} if(!wVal||wVal<1||wVal>50){err.textContent='W (1–50)';err.classList.add('show');return;} err.classList.remove('show'); S=sVal; W=wVal; buildCatScreen(); showScreen('screen-cats');}
+function startExercise(){const sVal=parseInt(document.getElementById('input-S').value); const wVal=parseInt(document.getElementById('input-W').value); const err=document.getElementById('setup-error'); if(!sVal||sVal<1||sVal>1000){err.textContent='S (1–1000)';err.classList.add('show');return;} if(!wVal||wVal<1||wVal>50){err.textContent='W (1–50)';err.classList.add('show');return;} err.classList.remove('show'); S=sVal; W=wVal; saveLastParams(); buildCatScreen(); showScreen('screen-cats');}
 const ALL_CATS=['aggettivo','articolo','aux','avverbio','congiunzione','numero','particella','preposizione','pronome','sostantivo','verbo'];
 function buildCatScreen(){const list=document.getElementById('cat-list'); list.innerHTML=''; ALL_CATS.sort().forEach(cat=>{const isOn=selectedCats.has(cat); const div=document.createElement('div'); div.className='cat-toggle'+(isOn?' selected':''); div.dataset.cat=cat; div.innerHTML=`<span class="cat-toggle-label">${cat}</span><div class="cat-toggle-check">${isOn?'✓':''}</div>`; div.onclick=()=>toggleCat(cat,div); list.appendChild(div);});}
 function toggleCat(cat,el){if(selectedCats.has(cat)){if(selectedCats.size<=1)return; selectedCats.delete(cat); el.classList.remove('selected'); el.querySelector('.cat-toggle-check').textContent='';}else{selectedCats.add(cat); el.classList.add('selected'); el.querySelector('.cat-toggle-check').textContent='✓';}}
@@ -672,7 +686,10 @@ async function evaluateAnswer(ans, isDrill){
   const correct=containsTranslation(ans, getTranslationsList(w[3]));
   if(isDrill){
     await showDrillFeedback(correct,w,display);
-    if(correct){ drillCurrentWord.counter++; if(drillCurrentWord.counter>=3) drill = drill.filter(d=>d!==drillCurrentWord); }
+    if(correct){ 
+        if (drillCurrentWord.counter < 3) drillCurrentWord.counter++; 
+        if(drillCurrentWord.counter >= 3) drill = drill.filter(d=>d!==drillCurrentWord); 
+    }
     else drillCurrentWord.counter = 0;
     updateDrillCounterBadge();
   }else{
@@ -698,10 +715,25 @@ function showEnd(){if(currentRecognition)try{currentRecognition.stop()}catch(e){
 function repeatSame(){words=getWords(S,W); W=words.length; currentIdx=0; drill=[]; stats={correct:0,wrong:0}; retryCount=0; updateDrillCounterBadge(); saveProgress(); showScreen('screen-exercise'); showWord();}
 function repeatNew(){S=S+Math.floor(W/2); if(S>1000)S=1; words=getWords(S,W); W=words.length; currentIdx=0; drill=[]; stats={correct:0,wrong:0}; retryCount=0; updateDrillCounterBadge(); saveProgress(); showScreen('screen-exercise'); showWord();}
 function goHome(){if(currentRecognition)try{currentRecognition.stop()}catch(e){} currentRecognition=null; if(pendingEvalTimeout)clearTimeout(pendingEvalTimeout); showScreen('screen-setup');}
-function terminateExercise(){if(window.speechSynthesis)window.speechSynthesis.cancel(); if(currentRecognition)try{currentRecognition.stop()}catch(e){} currentRecognition=null; if(pendingEvalTimeout)clearTimeout(pendingEvalTimeout); showEnd(); }
+function terminateExercise(){
+    if(window.speechSynthesis) window.speechSynthesis.cancel();
+    if(currentRecognition) try{ currentRecognition.stop(); } catch(e){}
+    currentRecognition = null;
+    if(pendingEvalTimeout) clearTimeout(pendingEvalTimeout);
+    saveLastParams(); // Salva i parametri correnti
+    showToast('Sessione terminata. I parametri W e S utilizzati saranno riproposti al prossimo riavvio.');
+    showEnd(); 
+}
 function stopExercise(){if(currentRecognition)try{currentRecognition.stop()}catch(e){} currentRecognition=null; if(pendingEvalTimeout)clearTimeout(pendingEvalTimeout); showEnd();}
 function togglePause(){isPaused=!isPaused; const btns=document.querySelectorAll('.pause-btn'); btns.forEach(btn=>{if(isPaused){btn.textContent='▶️'; btn.classList.add('paused');}else{btn.textContent='⏸️'; btn.classList.remove('paused');}}); if(isPaused){if(currentRecognition)stopPushListening(false); if(pendingEvalTimeout)clearTimeout(pendingEvalTimeout); showToast('Pausa');}else{showToast('Ripresa'); if(words[currentIdx])setTimeout(()=>showWord(),300);}}
-window.onload=function(){if(window.speechSynthesis){window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged=()=>{getBestItalianVoice();getBestEnglishVoice();}; setTimeout(()=>{getBestItalianVoice();getBestEnglishVoice();},500);}};
+window.onload=function(){
+    loadLastParams(); // Ripristina gli ultimi S e W salvati
+    if(window.speechSynthesis){
+        window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged=()=>{getBestItalianVoice();getBestEnglishVoice();};
+        setTimeout(()=>{getBestItalianVoice();getBestEnglishVoice();},500);
+    }
+};
 </script>
 </body>
 </html>
